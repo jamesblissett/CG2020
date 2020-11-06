@@ -1,0 +1,1 @@
+Although this approach works OK, you might have an intuition that something isn't quite right - and that something is to do with depth and perspective. Try not to worry about this too much at the moment - we will return to the topic of 3D texture mapping in a later workbook. For the time being, this basic approach to texture mapping is fine.

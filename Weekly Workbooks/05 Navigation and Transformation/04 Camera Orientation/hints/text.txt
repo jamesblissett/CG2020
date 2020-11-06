@@ -1,0 +1,3 @@
+When rotating the orientation of the camera, we again need to create a 3x3 rotation matrix. Once you have a created a suitable `mat3` rotation matrix, this should be applied to the camera orientation matrix. Again, we can make use of the `*` operator to multiply the camera orientation matrix by the rotation transformation matrix to calculate the new camera orientation.
+
+**Important**: It is essential that your code only manipulates the position of the camera (i.e. you do not alter the vertices of the model artefacts themselves).

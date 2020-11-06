@@ -1,0 +1,6 @@
+Your render of the Cornell Box is probably looking quite good by now ? The problem is that in order to _really_ test out your rendering code, you need to view the model from a number of different angles. Take a look and the slides and audio narration above relating to translation and rotation, then add some key event handlers to your code that will allow a user to interactively:
+
+- translate the camera in 3 dimensions (up/down, left/right, forwards/backwards)
+- rotate the camera position about the centre of the model in 2 dimensions (about the X axis and about the Y axis)
+
+Both of these features will allow you to move the camera in order to see how your render looks from different points of view. **Important**: It is essential that your code only manipulates the position of the camera (i.e. you do not alter the vertices of the model artefacts themselves).

@@ -1,0 +1,5 @@
+Translating the position of the camera is relatively easy - it's just a case of adding (or subtracting) a suitable amount to either the x, y, or z coordinate of the camera position `vec3`. Rotation on the other hand is a little more complex - you will need to create a 3x3 rotation matrix to apply to the camera position. 
+
+Take a look at <a href="https://en.wikibooks.org/wiki/GLSL_Programming/Vector_and_Matrix_Operations" target="_blank">this documentation on matrices</a> to find out how to create can manipulate matrices in GLM. When instantiating a `mat3`, remember that GLM is _column major_ (i.e. the order of parameters is first column, then second column, then third).
+
+Once you have created a suitable `mat3` rotation matrix, this can be applied to the camera position vector. Luckily, GLM vectors and matrices override the `*` operator, so we can simply multiply the camera position vector by the rotation transformation matrix to get the new camera position !
