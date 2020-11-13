@@ -21,11 +21,21 @@
 #define HEIGHT 240
 
 glm::vec3 globalCameraPosition = glm::vec3(0, 0, 4);
+// right up forward
 glm::mat3 cameraOrientationMatrix = glm::mat3(1, 0, 0, 0, 1, 0, 0, 0, 1);
 std::array<std::array<float, HEIGHT>, WIDTH> depthBuffer;
+int renderMode = 2;
 
 uint32_t packColour(Colour colour) {
     return (255 << 24) + (int(colour.red) << 16) + (int(colour.green) << 8) + int(colour.blue);
+}
+
+float veryGoodMod(float x, float y) {
+    while (x < 0) {
+        x += y;
+    }
+
+    return fmod(x, y);
 }
 
 // we lose some accuracy in the numbers when we convert from the strings to the
@@ -154,8 +164,8 @@ void drawLine(DrawingWindow &window, CanvasPoint start, CanvasPoint end, Colour 
     end = CanvasPoint((int) end.x, (int) end.y, end.depth);
     int noSteps = std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1;
     std::vector<glm::vec3> vs = interpolateThreeElementValues(glm::vec3(start.x, start.y, start.depth), glm::vec3(end.x, end.y, end.depth), noSteps);
-    for(int i=0; i<noSteps; i++){
-        if (std::round(vs.at(i)[0]) < WIDTH && std::round(vs.at(i)[0]) > 0 && std::round(vs.at(i)[1]) < HEIGHT && std::round(vs.at(i)[1]) > 0) {
+    for (int i = 0; i < noSteps; i++){
+        if (std::round(vs.at(i)[0]) < WIDTH && std::round(vs.at(i)[0]) >= 0 && std::round(vs.at(i)[1]) < HEIGHT && std::round(vs.at(i)[1]) >= 0) {
             if (vs.at(i)[2] <= depthBuffer[std::round(vs.at(i)[0])][std::round(vs.at(i)[1])]) {
                 depthBuffer[std::round(vs.at(i)[0])][std::round(vs.at(i)[1])] = vs.at(i)[2];
                 window.setPixelColour(std::round(vs.at(i)[0]), std::round(vs.at(i)[1]), packColour(colour));
@@ -171,83 +181,105 @@ void drawStrokedTriangle(DrawingWindow &window, CanvasTriangle triangle, Colour 
 }
 
 void drawFilledTriangle(DrawingWindow &window, CanvasTriangle triangle, Colour colour) {
-   if (triangle.v0().y > triangle.v1().y) {
-      std::swap(triangle.v0(), triangle.v1());
-   }
-   if (triangle.v1().y > triangle.v2().y) {
-      std::swap(triangle.v1(), triangle.v2());
-   }
-   if (triangle.v0().y > triangle.v1().y) {
-      std::swap(triangle.v0(), triangle.v1());
-   }
+    if (triangle.v0().y > triangle.v1().y) {
+       std::swap(triangle.v0(), triangle.v1());
+    }
+    if (triangle.v1().y > triangle.v2().y) {
+       std::swap(triangle.v1(), triangle.v2());
+    }
+    if (triangle.v0().y > triangle.v1().y) {
+       std::swap(triangle.v0(), triangle.v1());
+    }
 
-   drawStrokedTriangle(window, triangle, colour);
+    drawStrokedTriangle(window, triangle, colour);
 
-   CanvasPoint start = triangle.v0();
-   CanvasPoint end = triangle.v2();
-   std::vector<glm::vec3> Line1 = interpolateThreeElementValues(glm::vec3(start.x, start.y, start.depth),
-                                                                glm::vec3(end.x, end.y, end.depth),
-                                                                std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1);
-   end = triangle.v1();
-   std::vector<glm::vec3> Line2 = interpolateThreeElementValues(glm::vec3(start.x, start.y,start.depth),
+    CanvasPoint start = triangle.v0();
+    CanvasPoint end = triangle.v2();
+    std::vector<glm::vec3> Line1 = interpolateThreeElementValues(glm::vec3(start.x, start.y, start.depth),
+                                                                 glm::vec3(end.x, end.y, end.depth),
+                                                                 std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1);
+    end = triangle.v1();
+    std::vector<glm::vec3> Line2 = interpolateThreeElementValues(glm::vec3(start.x, start.y,start.depth),
+                                                                 glm::vec3(end.x, end.y,end.depth),
+                                                                 std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1);
+    start = triangle.v1();
+    end = triangle.v2();
+    std::vector<glm::vec3> Line3 = interpolateThreeElementValues(glm::vec3(start.x, start.y,start.depth),
                                                                 glm::vec3(end.x, end.y,end.depth),
                                                                 std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1);
-   start = triangle.v1();
-   end = triangle.v2();
-   std::vector<glm::vec3> Line3 = interpolateThreeElementValues(glm::vec3(start.x, start.y,start.depth),
-                                                                glm::vec3(end.x, end.y,end.depth),
-                                                                std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1);
-    int lineOneIndex = 1;
-    int lineTwoIndex = 1;
-    int lineThreeIndex = 1;
+    int lineOneIndex = 0;
+    int lineTwoIndex = 0;
+    int lineThreeIndex = 0;
     for (int i = triangle.v0().y; i < triangle.v2().y; i++) {
-      while (Line1.at(lineOneIndex)[1] < i) {
+        while (Line1.at(lineOneIndex)[1] < i) {
             lineOneIndex += 1;
         }
-         if (lineOneIndex == Line1.size()) {
-             lineOneIndex--;
-         }
-      if (i < triangle.v1().y) {
-         while (Line2.at(lineTwoIndex)[1] < i) {
-            lineTwoIndex += 1;
-         }
-         if (lineTwoIndex == Line2.size()) {
-             lineTwoIndex--;
-         }
-         drawLine(window, CanvasPoint(Line1.at(lineOneIndex)[0], i, Line1.at(lineOneIndex)[2]), CanvasPoint(Line2.at(lineTwoIndex)[0], i, Line2.at(lineTwoIndex)[2]), colour);
-      } else {
-         while (Line3.at(lineThreeIndex)[1] < i ) {
-            lineThreeIndex += 1;
-         }
+
+        if (lineOneIndex == Line1.size()) {
+            lineOneIndex--;
+        }
+
+        if (i < triangle.v1().y) {
+            while (Line2.at(lineTwoIndex)[1] < i) {
+                lineTwoIndex += 1;
+            }
+
+            if (lineTwoIndex == Line2.size()) {
+                lineTwoIndex--;
+            }
+
+            drawLine(window, CanvasPoint(Line1.at(lineOneIndex)[0], i, Line1.at(lineOneIndex)[2]),
+                             CanvasPoint(Line2.at(lineTwoIndex)[0], i, Line2.at(lineTwoIndex)[2]), colour);
+        } else {
+            while (Line3.at(lineThreeIndex)[1] < i ) {
+                lineThreeIndex += 1;
+            }
+
             if(lineThreeIndex == Line3.size()) {
                 lineThreeIndex--;
             }
-         drawLine(window, CanvasPoint(Line1.at(lineOneIndex)[0], i, Line1.at(lineOneIndex)[2]), CanvasPoint(Line3.at(lineThreeIndex)[0], i, Line3.at(lineThreeIndex)[2]), colour);
-      }
-   }
+            drawLine(window, CanvasPoint(Line1.at(lineOneIndex)[0], i, Line1.at(lineOneIndex)[2]),
+                             CanvasPoint(Line3.at(lineThreeIndex)[0], i, Line3.at(lineThreeIndex)[2]), colour);
+        }
+    }
 }
 
 void drawTexturedLine(DrawingWindow &window, CanvasPoint startParam, CanvasPoint endParam, TextureMap tm) {
+    std::cout << startParam << std::endl;
+    std::cout << endParam << std::endl;
     CanvasPoint start = CanvasPoint((int) startParam.x, (int) startParam.y, startParam.depth);
     CanvasPoint end = CanvasPoint((int) endParam.x, (int) endParam.y, endParam.depth);
     start.texturePoint = TexturePoint(startParam.texturePoint.x, startParam.texturePoint.y);
     end.texturePoint = TexturePoint(endParam.texturePoint.x, endParam.texturePoint.y);
     int noSteps = std::max(std::abs(start.x - end.x), std::abs(start.y - end.y)) + 1;
-    std::vector<glm::vec3> vs = interpolateThreeElementValues(
-           glm::vec3(start.x, start.y, start.depth), glm::vec3(end.x, end.y, end.depth), noSteps);
-    std::vector<glm::vec3> texvs = interpolateThreeElementValues(glm::vec3(start.texturePoint.x, start.texturePoint.y, 0), glm::vec3(end.texturePoint.x, end.texturePoint.y, 0), noSteps);
-    for(int i=0; i<noSteps; i++){
-        if (vs.at(i)[2] <= depthBuffer[std::round(vs.at(i)[0])][std::round(vs.at(i)[1])]) {
-            depthBuffer[std::round(vs.at(i)[0])][std::round(vs.at(i)[1])] = vs.at(i)[2];
-            window.setPixelColour(std::round(vs.at(i)[0]), std::round(vs.at(i)[1]), tm.pixels[tm.width * std::round(texvs.at(i)[1]) + std::round(texvs.at(i)[0])]);
+    std::vector<glm::vec3> vs = interpolateThreeElementValues(glm::vec3(start.x, start.y, start.depth),
+                                                              glm::vec3(end.x, end.y, end.depth),
+                                                              noSteps);
+    std::cout << start.texturePoint.x << ", " << start.texturePoint.y << std::endl;
+    std::cout << end.texturePoint.x << ", " << end.texturePoint.y << std::endl;
+    std::vector<glm::vec3> texvs = interpolateThreeElementValues(glm::vec3(start.texturePoint.x, start.texturePoint.y, 0),
+                                                                 glm::vec3(end.texturePoint.x, end.texturePoint.y, 0),
+                                                                 noSteps);
+    for (int i = 0; i < noSteps; i++) {
+        if (std::round(vs.at(i)[0]) > 0 && std::round(vs.at(i)[0]) < WIDTH && std::round(vs.at(i)[1]) > 0 && std::round(vs.at(i)[1]) < HEIGHT) {
+            if (vs.at(i)[2] <= depthBuffer[std::round(vs.at(i)[0])][std::round(vs.at(i)[1])]) {
+                depthBuffer[std::round(vs.at(i)[0])][std::round(vs.at(i)[1])] = vs.at(i)[2];
+                /* std::cout << std::round(vs.at(i)[0]) << std::endl; */
+                /* std::cout << std::round(vs.at(i)[1]) << std::endl; */
+                /* std::cout << std::round(texvs.at(i)[1]) << std::endl; */
+                /* std::cout << std::round(texvs.at(i)[0]) << std::endl; */
+                /* std::cout << tm.width * std::round(texvs.at(i)[1]) + std::round(texvs.at(i)[0]) << std::endl; */
+                /* std::cout << tm.pixels[tm.width * std::round(texvs.at(i)[1]) + std::round(texvs.at(i)[0])] << std::endl; */
+                window.setPixelColour(std::round(vs.at(i)[0]), std::round(vs.at(i)[1]), tm.pixels[tm.width * std::round(texvs.at(i)[1]) + std::round(texvs.at(i)[0])]);
+            }
         }
-   }
+    }
 }
 
 void drawTexturedTriangle(DrawingWindow &window, CanvasTriangle triangle, TextureMap tm) {
-    std::cout << triangle.v0().texturePoint << std::endl;
-    std::cout << triangle.v1().texturePoint << std::endl;
-    std::cout << triangle.v2().texturePoint << std::endl;
+    /* std::cout << triangle.v0().texturePoint << std::endl; */
+    /* std::cout << triangle.v1().texturePoint << std::endl; */
+    /* std::cout << triangle.v2().texturePoint << std::endl; */
     if (triangle.v0().y > triangle.v1().y) {
        std::swap(triangle.v0(), triangle.v1());
     }
@@ -290,8 +322,8 @@ void drawTexturedTriangle(DrawingWindow &window, CanvasTriangle triangle, Textur
              float percentageLine2 = (i - triangle.v0().y)/(triangle.v1().y - triangle.v0().y);
              float texLine2X = triangle.v0().texturePoint.x + (triangle.v1().texturePoint.x - triangle.v0().texturePoint.x) * percentageLine2;
              float texLine2Y = triangle.v0().texturePoint.y + (triangle.v1().texturePoint.y - triangle.v0().texturePoint.y) * percentageLine2;
-             s.texturePoint = TexturePoint(texLine1X, texLine1Y);
-             e.texturePoint = TexturePoint(texLine2X, texLine2Y);
+             s.texturePoint = TexturePoint(veryGoodMod(texLine1X, tm.width), veryGoodMod(texLine1Y, tm.height));
+             e.texturePoint = TexturePoint(veryGoodMod(texLine2X, tm.width), veryGoodMod(texLine2Y, tm.height));
              drawTexturedLine(window, s, e, tm);
          } else {
              while (Line3.at(lineThreeIndex)[1] < i ) {
@@ -305,11 +337,11 @@ void drawTexturedTriangle(DrawingWindow &window, CanvasTriangle triangle, Textur
              float percentageLine3 = (i - triangle.v1().y)/(triangle.v2().y - triangle.v1().y);
              float texLine3X = triangle.v1().texturePoint.x + (triangle.v2().texturePoint.x - triangle.v1().texturePoint.x) * percentageLine3;
              float texLine3Y = triangle.v1().texturePoint.y + (triangle.v2().texturePoint.y - triangle.v1().texturePoint.y) * percentageLine3;
-             s.texturePoint = TexturePoint(texLine1X, texLine1Y);
-             e.texturePoint = TexturePoint(texLine3X, texLine3Y);
+             s.texturePoint = TexturePoint(veryGoodMod(texLine1X, tm.width), veryGoodMod(texLine1Y, tm.height));
+             e.texturePoint = TexturePoint(veryGoodMod(texLine3X, tm.width), veryGoodMod(texLine3Y, tm.height));
              drawTexturedLine(window, s, e, tm);
       }
-   }
+    }
 }
 
 // does the formula in worksheet 4
@@ -328,10 +360,17 @@ CanvasPoint objectCoordToImagePlaneCoord(glm::vec3 vertex, float focalLength, gl
     return CanvasPoint(u, v, 1 / translatedVertex[2]);
 }
 
+void lookAt(glm::vec3 pointToLookAt) {
+    glm::vec3 forward = glm::normalize(globalCameraPosition - pointToLookAt);
+    glm::vec3 right = glm::cross(glm::vec3(0, 1, 0), forward);
+    glm::vec3 up = glm::cross(forward, right);
+    cameraOrientationMatrix = glm::mat3(right, up, forward);
+}
+
 void renderTriangles(DrawingWindow &window, std::vector<ModelTriangle> triangles, glm::vec3 cameraPosition, float focalLength, std::map<std::string, TextureMap> palette) {
     glm::vec3 screenShiftVector = glm::vec3(0, 0, 0);
 
-    for (const ModelTriangle & triangle : triangles) {
+    for (const ModelTriangle &triangle : triangles) {
         CanvasTriangle translatedTriangle;
         std::vector<CanvasPoint> translatedTrianglePoints;
 
@@ -341,10 +380,34 @@ void renderTriangles(DrawingWindow &window, std::vector<ModelTriangle> triangles
             translatedTrianglePoints.push_back(newPoint);
         }
         translatedTriangle = CanvasTriangle(translatedTrianglePoints[0], translatedTrianglePoints[1], translatedTrianglePoints[2]);
-        if (palette[triangle.material].colour.name == "NOT A COLOUR") {
-            drawTexturedTriangle(window, translatedTriangle, palette[triangle.material]);
-        } else {
-            drawFilledTriangle(window, translatedTriangle, triangle.colour);
+
+        switch (renderMode) {
+            // wireframe
+            case 0:
+                drawStrokedTriangle(window, translatedTriangle, triangle.colour);
+                break;
+
+            // rasterise no texture
+            case 1:
+                if (palette[triangle.material].colour.name == "NOT A COLOUR") {
+                    drawFilledTriangle(window, translatedTriangle, Colour(255, 255, 255));
+                } else {
+                    drawFilledTriangle(window, translatedTriangle, triangle.colour);
+                }
+                break;
+
+            // texture
+            case 2:
+                if (palette[triangle.material].colour.name == "NOT A COLOUR") {
+                    drawTexturedTriangle(window, translatedTriangle, palette[triangle.material]);
+                } else {
+                    drawFilledTriangle(window, translatedTriangle, triangle.colour);
+                }
+                break;
+
+            // ray trace
+            case 3:
+                break;
         }
     }
 }
@@ -363,6 +426,7 @@ void draw(DrawingWindow &window, std::vector<ModelTriangle> triangles, std::map<
 
 void update(DrawingWindow &window) {
     // Function for performing animation (shifting artifacts or moving the camera)
+    lookAt(glm::vec3(0, 0, 0));
 }
 
 void handleEvent(SDL_Event event, DrawingWindow &window) {
@@ -435,6 +499,11 @@ void handleEvent(SDL_Event event, DrawingWindow &window) {
             case SDLK_l:
                 angle *= -1;
                 break;
+            case SDLK_g:
+                renderMode += 1;
+                renderMode = renderMode % 3;
+            case SDLK_k:
+                lookAt(glm::vec3(0, 0, 0));
             /* case SDLK_q: */
             /*     rotMat = glm::mat3(cos(angle), sin(angle), 0, -1 * sin(angle), cos(angle), 0, 0, 0, 1); */
             /*     globalCameraPosition = globalCameraPosition * rotMat; */
@@ -449,6 +518,9 @@ int main(int argc, char *argv[]) {
 
     std::map<std::string, TextureMap> palette = readOBJMaterialFile("textured-cornell-box.mtl");
     std::vector<ModelTriangle> triangles = readOBJFile("textured-cornell-box.obj", 0.17, palette);
+
+    /* std::map<std::string, TextureMap> palette = readOBJMaterialFile("/home/james/ForJames.obj.mtl"); */
+    /* std::vector<ModelTriangle> triangles = readOBJFile("/home/james/ForJames.obj", 0.17, palette); */
 
     DrawingWindow window = DrawingWindow(WIDTH, HEIGHT, false);
     SDL_Event event;
