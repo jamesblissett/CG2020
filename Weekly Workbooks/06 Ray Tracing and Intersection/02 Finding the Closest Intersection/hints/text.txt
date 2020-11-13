@@ -1,0 +1,14 @@
+To help you towards implementing your `getClosestIntersection` function, below is a code equivalent of the ray/triangle intersection equation that was shown in the slides at the top of this section:  
+
+``` cpp
+glm::vec3 e0 = triangle.vertices[1] - triangle.vertices[0];
+glm::vec3 e1 = triangle.vertices[2] - triangle.vertices[0];
+glm::vec3 SPVector = cameraPosition - triangle.vertices[0];
+glm::mat3 DEMatrix(-rayDirection, e0, e1);
+glm::vec3 possibleSolution = glm::inverse(DEMatrix) * SPVector;
+```
+Remember that the `possibleSolution` calculated by the above code is **not** the [x,y,z] coordinates of a point in 3 dimensional space, but rather a three-element data structure that consists of:
+
+- `t` the distance along the ray from the camera to the intersection point
+- `u` the proportion along the triangle's first edge that the intersection point occurs
+- `v` the proportion along the triangle's second edge that the intersection point occurs

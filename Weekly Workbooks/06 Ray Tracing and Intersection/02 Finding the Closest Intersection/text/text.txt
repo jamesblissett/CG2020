@@ -1,0 +1,9 @@
+The first activity we need to perform when attempting ray tracing is to detect when a projected ray intersects with a triangle. Watch the narrated slides and animations above to gain an understanding of how to perform this operation, then write a function called `getClosestIntersection` that given:
+
+- The position vector of the camera
+- The direction vector of a ray being cast into the scene
+- The set of all of the triangles in the model
+
+... will search through the triangles and return details of the intersected point on the _closest_ triangle (if any !). You are going to need to return various details about the intersection point found. There is a class in the SDW folder called `RayTriangleIntersection` that you might like to use to store and return all of these details.
+
+You will not be able to test your function just yet. Write it as best you can for the moment, we will test it fully in a later task (when we have build more of the ray tracer). At which point you may have to return to this task to revise your `getClosestIntersection` function.

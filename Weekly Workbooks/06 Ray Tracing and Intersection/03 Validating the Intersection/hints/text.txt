@@ -1,0 +1,1 @@
+Test your `getClosestIntersection` function by passing it a direction vector with a _known_ intersection (e.g. the ray that is fired through the dead centre of the image plane _should_ intersect with the front of the blue box in the test model).

@@ -1,0 +1,9 @@
+We need to be careful when searching for ray/triangle intersections because the `getClosestIntersection` function can often return false-positive results. Any possible solution **must** be validated against the following constraints on `u` and `v`:
+
+```
+(u >= 0.0) && (u <= 1.0)
+(v >= 0.0) && (v <= 1.0)
+(u + v) <= 1.0
+```
+
+This is important because the found solution might well be on the same plane as the triangle, but **not** within the bounds of the triangle itself (as illustrated in the diagram below). You should also check that the distance `t` from the camera to the intersection is positive (otherwise you may end up rendering triangles that are actually _behind_ the camera !)

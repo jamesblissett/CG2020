@@ -1,0 +1,7 @@
+Shadows are a key element of 3D rendering that we have as yet not addressed. We see them all the time in the real world, so if we want our renders to look realistic, we are going to need to simulate them.
+
+Determining when a point in a scene should be drawn in shadow is conceptually relatively straight-forward. However there are some additional complexities that we have to deal with when implementing a consistent shadow effect. Review the slides and audio narrative relating to shadows above and then implement the concepts in your ray tracer.
+
+You are going to need a new `vec3` variable to hold the position of a single-point light source. A location in the middle of the room, above the origin, somewhere near the ceiling would seem sensible place for it !
+
+Once correctly implemented, your render of the Cornell box should look something like the image below (depending on where you position your light source):

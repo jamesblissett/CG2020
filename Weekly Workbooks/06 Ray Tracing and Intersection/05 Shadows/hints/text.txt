@@ -1,0 +1,3 @@
+It is worth noting that your already-implemented `getClosestIntersection` function does a lot of the work required in order to check for the visibility of the light from a point on a surface. You may however need to invest a bit of time refactoring it to make it versatile enough to be used in detecting the existence of shadows.
+
+When comparing two triangles for equality, use their index value as the basis for comparison (i.e. their position in the triangle array). If you attempt to compare two triangles using the `==` operator, you may just be testing the memory address of those variables, rather than checking to see if those two variables hold the same triangle !

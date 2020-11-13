@@ -1,0 +1,1 @@
+At this stage, this doesn't seem like progress - if anything, this is a _slower_ way of getting the same results as with the rasteriser (although don't forget about the `make speedy` build rule). In the following task however (and next week as well), we will be doing things that are hard or impossible to do with a rasteriser - so stick with it, this is all worth doing !

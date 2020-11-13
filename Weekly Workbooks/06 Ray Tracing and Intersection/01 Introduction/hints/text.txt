@@ -1,0 +1,1 @@
+The code that you will write in this workbook will be very resource intensive. If you find that your renderer is running too slowly to allow you to test it effectively, then you might like to try using the optimised `make speedy` build rule.

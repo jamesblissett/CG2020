@@ -1,0 +1,8 @@
+Add some additional key event handlers to your program that allows the user to switch between the three main modes of rendering:
+
+- Wireframe: Stroked/Outline triangles
+- Rasterised: Filled Triangles drawn using your rasterising code
+- Raytraced: Filled Triangles drawn using your brand-new raytracing code
+
+This will be very useful later on as it will allow you to navigate the camera around the scene using the FAST wireframe renderer and then switch to the (much slower) ray traced renderer to view the fully lit scene from a particular angle (great for testing !)  
+
