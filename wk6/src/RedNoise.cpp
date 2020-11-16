@@ -404,12 +404,13 @@ void renderRayTrace(DrawingWindow &window, std::vector<ModelTriangle> triangles,
             /* (u - WIDTH / 2) / (-1 * focalLength * scaleFactor); */
             /* glm::vec3 pixelPosition = glm::vec3((u - WIDTH / 2) * scaleFactor, (v - HEIGHT / 2) * scaleFactor, 0); */
 
-            glm::vec3 pixelPosition = (globalCameraPosition + (glm::normalize(cameraOrientationMatrix[2]) * -focalLength))
-                                      + ((u - WIDTH / 2) * glm::normalize(cameraOrientationMatrix[0]) * scaleFactor)
-                                      + ((v - HEIGHT / 2) * glm::normalize(cameraOrientationMatrix[1]) * -scaleFactor);
-            glm::vec3 ray = glm::normalize(pixelPosition - globalCameraPosition);
+            /* glm::vec3 pixelPosition = (globalCameraPosition + (glm::normalize(cameraOrientationMatrix[2]) * -focalLength)) */
+            /*                           + ((u - WIDTH / 2) * glm::normalize(cameraOrientationMatrix[0]) * scaleFactor) */
+            /*                           + ((v - HEIGHT / 2) * glm::normalize(cameraOrientationMatrix[1]) * -scaleFactor); */
+            glm::vec3 worldSpacePixel = glm::vec3(u - WIDTH / 2, v - HEIGHT / 2, -focalLength) * glm::inverse(cameraOrientationMatrix) + globalCameraPosition;
+            glm::vec3 ray = glm::normalize(worldSpacePixel - globalCameraPosition);
 
-            /* std::cout << "Ray: " << ray[0] << ", " << ray[1] << ", " << ray[2] << std::endl; */
+            std::cout << "Ray: " << ray[0] << ", " << ray[1] << ", " << ray[2] << std::endl;
 
             rti = getClosestIntersection(globalCameraPosition, ray, triangles);
             /* std::cout << rti << std::endl; */
@@ -432,7 +433,7 @@ void renderTriangles(DrawingWindow &window, std::vector<ModelTriangle> triangles
     std::cout << rti.intersectedTriangle.colour << std::endl;
 
     if (renderMode == 3) {
-        renderRayTrace(window, triangles, focalLength, 0.01);
+        renderRayTrace(window, triangles, focalLength, WIDTH);
         return;
     }
 
